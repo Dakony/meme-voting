@@ -13,20 +13,41 @@ function renderMemes() {
   var rendered = Mustache.render(template, { memeArray });
   $("#memeBody").html(rendered);
 }
+async function callStatic(func, args, types) {
+  const calledGet = await client.contractCallStatic(contractAddress,
+  'sophia-address', func, {args}).catch(e => console.error(e));
+
+  const decodedGet = await client.contractDecodeData(types,
+  calledGet.result.returnValue).catch(e => console.error(e));
+
+  return decodedGet;
+}
+
+async function contractCall(func, args, value, types) {
+  const calledSet = await client.contractCall(contractAddress, 'sophia-address',
+  contractAddress, func, {args, options: {amount:value}}).catch(async e => {
+    const decodedError = await client.contractDecodeData(types,
+    e.returnValue).catch(e => console.error(e));
+  });
+
+  return
+}
 window.addEventListener("load", async () => {
   $("#loader").show;
   client = await Ae.Aepp();
+  const getMemesLength = await callStatic('getMemesLength','()','int');
+  memesLength = getMemesLength.value;
+  
+  for (let i = 1; i <= memesLength; i++) {
+    const meme = await callStatic('getMeme',`(${i})`,'(address, string, string, int)');
 
-  const calledGet = await client
-    .contractCallStatic(contractAddress, "sophia-address", "getMemesLength", {
-      args: "()"
+    memeArray.push({
+      creatorName: meme.value[2].value,
+      memeUrl: meme.value[1].value,
+      index: i,
+      votes: meme.value[3].value,
     })
-    .catch(e => console.error(e));
-  console.log("calledGet", calledGet);
-  const decodeGet = await client
-    .contractDecodeData("int", calledGet.result.returnValue)
-    .catch(e => console.error(e));
-  console.log("decodeGet", decodeGet.value);
+  
 
   renderMemes();
   $("#loader").hide();
