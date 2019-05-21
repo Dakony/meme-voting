@@ -1,6 +1,6 @@
 const contractAddress = "ct_2CmAgcDeyb4gbtmigtnrxG4Nz8xGh4GZ8gtzR1mUS5MizCHUBB";
 var client = null;
-var memeArray = [];
+var memeArray = [{"creatorName":"dakony","memeUri":"./img/3D.jp","votes":18,"index":13}];
 var memesLength = 0;
 
 function renderMemes() {
